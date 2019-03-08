@@ -10,14 +10,18 @@ import Circle from './CustomOverlay/Circle';
 class App extends Component {
     constructor(props) {
         super(props);
-        this.bound = undefined;
-        this.drawList = {};
+        // this.drawList = {};
         this.state = {
             name: undefined,
             factor: undefined,
             drawingData: [],
             showFilterDrawingTool: false,
-            showModal: false
+            showModal: false,
+            bound: undefined,
+            mapLoad: undefined,
+            drawList: {},
+            check7: false,
+            factorArray: []
         };
     }
 
@@ -28,12 +32,11 @@ class App extends Component {
             this.mapOption()
         );
 
-        this.setState({ map: map });
-        this.bound = map.getBounds();
+        this.setState({ mapLoad: map, bound: map.getBounds() });
         this.mainPageLoad(map);
+
         naver.maps.Event.addListener(map, 'idle', e => {
-            this.bound = map.getBounds();
-            console.log(this.bound);
+            this.setState({ bound: map.getBounds() });
             this.mainPageLoad(map);
             this.DataDelete();
         });
@@ -64,8 +67,7 @@ class App extends Component {
     };
 
     mainPageLoad = map => {
-        const { name, factor } = this.state;
-        const bound = this.bound;
+        const { name, factor, bound, drawList } = this.state;
         axios
             .post('http://127.0.0.1:3001/user/load', {
                 name,
@@ -79,20 +81,28 @@ class App extends Component {
                 const userData = await data[1];
                 // if there is user data
 
+                const tempDrawList = { ...drawList };
+
                 if (result.status === 200 || result.status === 201) {
                     resultData.map(el => {
                         const { startPos, endPos, zoomLevel } = JSON.parse(
                             el.figures
                         );
-                        if (!(el.id in this.drawList)) {
+
+                        if (!(el.id in drawList)) {
                             const overlay = new Circle({
                                 position: { startPos, endPos },
                                 naverMap: map,
                                 zoom: zoomLevel
                             });
                             overlay.setMap(map);
-                            this.drawList[el.id] = overlay;
+                            tempDrawList[el.id] = overlay;
                         }
+                        this.setState({
+                            drawList: {
+                                ...tempDrawList
+                            }
+                        });
                     });
                 } else if (result.status === 204) {
                     alert('호재 데이터 정보 없음');
@@ -111,23 +121,93 @@ class App extends Component {
     };
 
     DataDelete = () => {
-        Object.entries(this.drawList).forEach(el => {
-            const key = el[0];
-            const value = el[1];
+        const { drawList, bound } = this.state;
+        Object.entries(drawList).forEach(([key, value]) => {
             const position = {};
             // reference point
             position.x = (value._startPos.coord.x + value._endPos.coord.x) / 2;
             position.y = (value._startPos.coord.y + value._endPos.coord.y) / 2;
+
             if (
-                position.y < this.bound._min._lat - 0.01
-                || position.y > this.bound._max._lat + 0.01
-                || position.x < this.bound._min._lng - 0.01
-                || position.x > this.bound._max._lng + 0.01
+                position.y < bound._min._lat - 0.01
+                || position.y > bound._max._lat + 0.01
+                || position.x < bound._min._lng - 0.01
+                || position.x > bound._max._lng + 0.01
             ) {
                 value.setMap(null);
-                delete this.drawList[key];
+                delete drawList[key];
             }
         });
+    };
+
+    _toggle7 = () => {
+        const { check7 } = this.state;
+        this.setState({ check7: !check7 });
+        return check7;
+    };
+
+    styleToggle = check => {
+        const obj = {};
+        if (check) {
+            obj.color = '#4d55b2';
+            obj['border-bottom'] = '2px solid #aaa';
+        } else {
+            obj.color = '#333';
+            obj['border-bottom'] = 'none';
+        }
+        return obj;
+    };
+
+    factorLoad = factor => {
+        const { factorArray, name, drawList, mapLoad, bound } = this.state;
+        let tempDrawList = {};
+        this.setState({ drawList: { ...tempDrawList } });
+        Object.entries(drawList).forEach(([key, value]) => {
+            value.setMap(null);
+            delete drawList[key];
+        });
+        // console.log(drawList);
+        if (!factorArray.includes(factor)) {
+            this.setState({ factorArray: [...factorArray, factor] });
+        }
+        console.log(factorArray);
+        axios
+            .post('http://127.0.0.1:3001/user/load', {
+                name,
+                bound,
+                factor
+            })
+            .then(async result => {
+                const data = await result.data;
+                // console.log(data);
+                const resultData = await data[0];
+                // const userData = await data[1];
+                tempDrawList = { ...drawList };
+                if (result.status === 200 || result.status === 201) {
+                    resultData.map(async el => {
+                        const { startPos, endPos, zoomLevel } = JSON.parse(
+                            el.figures
+                        );
+                        if (!(el.id in drawList)) {
+                            const overlay = new Circle({
+                                position: { startPos, endPos },
+                                naverMap: mapLoad,
+                                zoom: zoomLevel
+                            });
+                            overlay.setMap(mapLoad);
+                            tempDrawList[el.id] = overlay;
+                        }
+                        await this.setState({
+                            drawList: { ...tempDrawList }
+                        });
+                    });
+                } else if (result.status === 204) {
+                    alert('호재 데이터 정보 없음');
+                }
+            })
+            .catch(error => {
+                alert(error);
+            });
     };
 
     showFilterDrawingTool = () => {
@@ -142,15 +222,21 @@ class App extends Component {
 
     render() {
         const {
-            map,
+            mapLoad,
             drawingData,
             showFilterDrawingTool,
-            showModal
+            showModal,
+            bound,
+            name,
+            factor,
+            drawList,
+            check7,
+            factorArray
         } = this.state;
         return (
             <div id="wrapper">
                 <div id="map">
-                    <NearbyList map={map} />
+                    <NearbyList map={mapLoad} />
                     <ul id="loginFavorContainer">
                         <div
                             className="loginFavorBtn"
@@ -175,7 +261,20 @@ class App extends Component {
                         <LoginModal showModal={this.showModal} />
                     ) : null}
                     {showFilterDrawingTool ? (
-                        <Toolbox mapLoad={map} drawingData={drawingData} />
+                        <Toolbox
+                            mapLoad={mapLoad}
+                            drawingData={drawingData}
+                            bound={bound}
+                            name={name}
+                            factor={factor}
+                            drawList={drawList}
+                            DataDelete={this.DataDelete}
+                            check7={check7}
+                            factorArray={factorArray}
+                            _toggle7={this._toggle7}
+                            styleToggle={this.styleToggle}
+                            factorLoad={this.factorLoad}
+                        />
                     ) : null}
                 </div>
             </div>

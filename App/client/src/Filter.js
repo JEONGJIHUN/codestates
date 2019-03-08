@@ -1,24 +1,24 @@
-/* eslint-disable react/no-access-state-in-setstate */
-/* eslint-disable react/destructuring-assignment */
 import React, { Component } from 'react';
 import './Filter.less';
-import axios from 'axios';
-import * as d3 from 'd3';
-import Circle from './CustomOverlay/Circle';
+import PropTypes from 'prop-types';
 
 class Toolbox extends Component {
-    state = {
-        name: 'jihun',
-        bound: '',
-        factor: '',
-        check7: false,
-        factorArray: []
+    static propTypes = {
+        bound: PropTypes.object.isRequired,
+        mapLoad: PropTypes.object.isRequired,
+        name: PropTypes.string.isRequired,
+        drawList: PropTypes.object.isRequired
     };
 
-    _toggle7 = () => {
-        const { check7 } = this.state;
-        this.setState({ check7: !check7 });
-    };
+    // state = {
+    //     check7: false,
+    //     factorArray: []
+    // };
+
+    // _toggle7 = () => {
+    //     const { check7 } = this.state;
+    //     this.setState({ check7: !check7 });
+    // };
 
     // styleToggle = check => {
     //     const obj = {};
@@ -32,72 +32,19 @@ class Toolbox extends Component {
     //     return obj;
     // };
 
-    mapOption = () => {
-        const naver = window.naver;
-        const mapOptions = {
-            zoomControl: true,
-            zoomControlOptions: {
-                style: naver.maps.ZoomControlStyle.SMALL,
-                position: naver.maps.Position.LEFT_BOTTOM
-            },
-            logoControl: true,
-            logoControlOptions: {
-                position: naver.maps.Position.BOTTOM_RIGHT
-            },
-            scaleControl: true,
-            scaleControlOptions: {
-                position: naver.maps.Position.BOTTOM_RIGHT
-            },
-            mapDataControl: true,
-            mapDataControlOptions: {
-                position: naver.maps.Position.BOTTOM_RIGHT
-            }
-        };
-        return mapOptions;
-    };
-
-    factorLoad = async (fact, i) => {
-        // let
-        const naver = window.naver;
-        const map = await new naver.maps.Map(
-            d3.select('#map').node(),
-            this.mapOption()
-        );
-        const { name, bound, factorArray, factor } = this.state;
-        await this.setState({ factor: fact });
-        if (!factorArray.includes(fact)) {
-            await this.setState({ factorArray: [...factorArray, fact] });
-        }
-        axios
-            .post('http://127.0.0.1:3001/user/load', {
-                name,
-                bound,
-                factor
-            })
-            .then(async result => {
-                const resultData = await result.data;
-                if (result.status === 200 || result.status === 201) {
-                    resultData.map(el => {
-                        const { startPos, endPos, zoomLevel } = JSON.parse(
-                            el.figures
-                        );
-                        return new Circle({
-                            position: { startPos, endPos },
-                            naverMap: map,
-                            zoom: zoomLevel
-                        }).setMap(map);
-                    });
-                } else if (result.status === 204) {
-                    alert('호재 데이터 정보 없음');
-                }
-            })
-            .catch(error => {
-                alert(error);
-            });
-    };
-
     render() {
-        const { check7 } = this.state;
+        const {
+            // bound,
+            // mapLoad,
+            // name,
+            // drawList,
+            // DataDelete,
+            check7,
+            // factorArray,
+            // _toggle7,
+            // styleToggle,
+            factorLoad
+        } = this.props;
         const factorBox = [
             '상권형성',
             '재건축',
@@ -113,12 +60,12 @@ class Toolbox extends Component {
                         return (
                             <div
                                 className="filterBtn"
-                                onClick={() => this.factorLoad(factor)}
+                                onClick={() => factorLoad(factor)}
                                 onKeyPress={() => {}}
                                 role="button"
                                 tabIndex="0"
                                 key={factor}
-                                // style={this.styleToggle(check1)}
+                                // style={() => styleToggle(check7())}
                             >
                                 {'# '}
                                 {factor}

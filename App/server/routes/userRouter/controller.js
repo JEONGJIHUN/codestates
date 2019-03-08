@@ -30,10 +30,16 @@ exports.load = async (req, res) => {
             const result = await Figure.findAll({
                 where: {
                     center_lat: {
-                        [Op.between]: [bound._min._lat - 0.01, bound._max._lat + 0.01]
+                        [Op.between]: [
+                            bound._min._lat - 0.01,
+                            bound._max._lat + 0.01
+                        ]
                     },
                     center_lng: {
-                        [Op.between]: [bound._min._lng - 0.01, bound._max._lng + 0.01]
+                        [Op.between]: [
+                            bound._min._lng - 0.01,
+                            bound._max._lng + 0.01
+                        ]
                     }
                 }
             });
@@ -44,18 +50,27 @@ exports.load = async (req, res) => {
             await transaction.rollback();
             res.status(400).send('데이터 요청에 실패했습니다.');
         }
-    } else { // filtering factor
+    } else {
+        // filtering factor
         try {
             transaction = await User.sequelize.transaction();
-            const factorId = await Factor.findOne({ where: { name: factor } }).get('id');
+            const factorId = await Factor.findOne({
+                where: { name: factor }
+            }).get('id');
             const result = await Figure.findAll({
                 where: {
                     factor_id: factorId,
                     center_lat: {
-                        [Op.between]: [bound._min._lat - 0.01, bound._max._lat + 0.01]
+                        [Op.between]: [
+                            bound._min._lat - 0.01,
+                            bound._max._lat + 0.01
+                        ]
                     },
                     center_lng: {
-                        [Op.between]: [bound._min._lng - 0.01, bound._max._lng + 0.01]
+                        [Op.between]: [
+                            bound._min._lng - 0.01,
+                            bound._max._lng + 0.01
+                        ]
                     }
                 }
             });
@@ -77,10 +92,16 @@ exports.load = async (req, res) => {
                 include: [{ model: Drawing, where: { user_id: userId } }], // include => join을 함
                 where: {
                     center_lat: {
-                        [Op.between]: [bound._min._lat - 0.01, bound._max._lat + 0.01]
+                        [Op.between]: [
+                            bound._min._lat - 0.01,
+                            bound._max._lat + 0.01
+                        ]
                     },
                     center_lng: {
-                        [Op.between]: [bound._min._lng - 0.01, bound._max._lng + 0.01]
+                        [Op.between]: [
+                            bound._min._lng - 0.01,
+                            bound._max._lng + 0.01
+                        ]
                     }
                 }
             });

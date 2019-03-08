@@ -7,7 +7,10 @@ import './Toolbox.less';
 class Toolbox extends Component {
     static propTypes = {
         drawingData: PropTypes.array.isRequired,
-        mapLoad: PropTypes.object.isRequired
+        mapLoad: PropTypes.object.isRequired,
+        bound: PropTypes.object.isRequired,
+        name: PropTypes.string.isRequired,
+        drawList: PropTypes.object.isRequired
     };
 
     state = {
@@ -42,7 +45,19 @@ class Toolbox extends Component {
     };
 
     render() {
-        const { drawingData, mapLoad } = this.props;
+        const {
+            drawingData,
+            mapLoad,
+            bound,
+            name,
+            drawList,
+            DataDelete,
+            check7,
+            factorArray,
+            _toggle7,
+            styleToggle,
+            factorLoad
+        } = this.props;
         const {
             backgroundBlueForFilterTab,
             backgroundBlueForDrawingTab,
@@ -86,7 +101,20 @@ class Toolbox extends Component {
                     </div>
                 </div>
                 <div>
-                    {onFilter ? <Filter /> : null}
+                    {onFilter ? (
+                        <Filter
+                            bound={bound}
+                            mapLoad={mapLoad}
+                            name={name}
+                            drawList={drawList}
+                            DataDelete={DataDelete}
+                            check7={check7}
+                            factorArray={factorArray}
+                            _toggle7={_toggle7}
+                            styleToggle={styleToggle}
+                            factorLoad={factorLoad}
+                        />
+                    ) : null}
                     {onDrawing ? (
                         <Drawing map={mapLoad} drawingData={drawingData} />
                     ) : null}
