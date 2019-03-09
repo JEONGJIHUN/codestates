@@ -146,17 +146,26 @@ class App extends Component {
         return check7;
     };
 
-    styleToggle = check => {
-        const obj = {};
-        if (check) {
-            obj.color = '#4d55b2';
-            obj['border-bottom'] = '2px solid #aaa';
-        } else {
-            obj.color = '#333';
-            obj['border-bottom'] = 'none';
-        }
-        return obj;
+    tabToggle = tabIndex => {
+        const { tabs } = this.state;
+        tabs[tabIndex] = true;
+        tabs.map((tab, index) => {
+            if (index !== tabIndex) tab.active = false;
+        });
+        this.setState(tabs);
+        console.log(tabs);
     };
+    // styleToggle = check => {
+    //     const obj = {};
+    //     if (check) {
+    //         obj.color = '#4d55b2';
+    //         obj['border-bottom'] = '2px solid #aaa';
+    //     } else {
+    //         obj.color = '#333';
+    //         obj['border-bottom'] = 'none';
+    //     }
+    //     return obj;
+    // };
 
     factorLoad = factor => {
         const { factorArray, name, drawList, mapLoad, bound } = this.state;
@@ -226,12 +235,7 @@ class App extends Component {
             drawingData,
             showFilterDrawingTool,
             showModal,
-            bound,
-            name,
-            factor,
-            drawList,
-            check7,
-            factorArray
+            check7
         } = this.state;
         return (
             <div id="wrapper">
@@ -264,15 +268,8 @@ class App extends Component {
                         <Toolbox
                             mapLoad={mapLoad}
                             drawingData={drawingData}
-                            bound={bound}
-                            name={name}
-                            factor={factor}
-                            drawList={drawList}
-                            DataDelete={this.DataDelete}
                             check7={check7}
-                            factorArray={factorArray}
                             _toggle7={this._toggle7}
-                            styleToggle={this.styleToggle}
                             factorLoad={this.factorLoad}
                         />
                     ) : null}

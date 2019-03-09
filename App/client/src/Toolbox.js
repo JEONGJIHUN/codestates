@@ -8,9 +8,9 @@ class Toolbox extends Component {
     static propTypes = {
         drawingData: PropTypes.array.isRequired,
         mapLoad: PropTypes.object.isRequired,
-        bound: PropTypes.object.isRequired,
-        name: PropTypes.string.isRequired,
-        drawList: PropTypes.object.isRequired
+        check7: PropTypes.func.isRequired,
+        _toggle7: PropTypes.func.isRequired,
+        factorLoad: PropTypes.func.isRequired
     };
 
     state = {
@@ -48,14 +48,8 @@ class Toolbox extends Component {
         const {
             drawingData,
             mapLoad,
-            bound,
-            name,
-            drawList,
-            DataDelete,
             check7,
-            factorArray,
             _toggle7,
-            styleToggle,
             factorLoad
         } = this.props;
         const {
@@ -103,15 +97,8 @@ class Toolbox extends Component {
                 <div>
                     {onFilter ? (
                         <Filter
-                            bound={bound}
-                            mapLoad={mapLoad}
-                            name={name}
-                            drawList={drawList}
-                            DataDelete={DataDelete}
                             check7={check7}
-                            factorArray={factorArray}
                             _toggle7={_toggle7}
-                            styleToggle={styleToggle}
                             factorLoad={factorLoad}
                         />
                     ) : null}
